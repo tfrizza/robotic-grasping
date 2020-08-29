@@ -106,7 +106,7 @@ if __name__ == '__main__':
         logging.info('\nEvaluating model {}'.format(network))
 
         # Load Network
-        net = torch.load(network)
+        net = torch.load(network, map_location=device)
 
         results = {'correct': 0, 'failed': 0}
 
@@ -153,6 +153,7 @@ if __name__ == '__main__':
                         no_grasps=args.n_grasps,
                         grasp_width_img=width_img
                     )
+                # if idx==1: break
 
         avg_time = (time.time() - start_time) / len(test_data)
         logging.info('Average evaluation time per image: {}ms'.format(avg_time * 1000))

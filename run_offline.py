@@ -47,13 +47,13 @@ if __name__ == '__main__':
     pic = Image.open(args.depth_path, 'r')
     depth = np.expand_dims(np.array(pic), axis=2)
 
-    # Load Network
-    logging.info('Loading model...')
-    net = torch.load(args.network)
-    logging.info('Done')
-
     # Get the compute device
     device = get_device(args.force_cpu)
+
+    # Load Network
+    logging.info('Loading model...')
+    net = torch.load(args.network, map_location=device)
+    logging.info('Done')
 
     img_data = CameraData(include_depth=args.use_depth, include_rgb=args.use_rgb)
 

@@ -60,13 +60,13 @@ class ResidualBlock(nn.Module):
         self.conv2 = nn.Conv2d(in_channels, out_channels, kernel_size, padding=1)
         self.bn2 = nn.BatchNorm2d(in_channels)
 
-        self.dropout = dropout
-        self.dropout1 = nn.Dropout(p=prob)
+        # self.dropout = dropout
+        # self.dropout1 = nn.Dropout(p=prob)
 
     def forward(self, x_in):
         x = self.bn1(self.conv1(x_in))
         x = F.relu(x)
-        if self.dropout:
-            x = self.dropout1(x)
+        # if self.dropout:
+        #     x = self.dropout1(x)
         x = self.bn2(self.conv2(x))
         return x + x_in
