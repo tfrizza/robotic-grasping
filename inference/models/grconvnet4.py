@@ -3,7 +3,7 @@ import torch.nn.functional as F
 
 from inference.models.grasp_model import GraspModel, ResidualBlock
 
-
+# This is essentially same as gr3 but with less channels
 class GenerativeResnet(GraspModel):
 
     def __init__(self, input_channels=4, output_channels=1, channel_size=32, dropout=False, prob=0.0):
