@@ -103,8 +103,8 @@ class GraspModule(pl.LightningModule):
         return result
 
     def validation_epoch_end(self, val_step_outputs):
-        correct = np.sum(val_step_outputs.correct)
-        failed = np.sum(val_step_outputs.failed)
+        correct = torch.Tensor(val_step_outputs.correct).sum()
+        failed = torch.Tensor(val_step_outputs.failed).sum()
         val_step_outputs.log_dict({'correct_sum':correct,'failed_sum':failed,'IoU':correct/(correct+failed)})
         return val_step_outputs
 
