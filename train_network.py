@@ -240,17 +240,24 @@ def run():
     # Load Dataset
     logging.info('Loading {} Dataset...'.format(args.dataset.title()))
     Dataset = get_dataset(args.dataset)
-    dataset = Dataset(args.dataset_path,
+    train_dataset = Dataset(args.dataset_path,
                       ds_rotate=args.ds_rotate,
                       random_rotate=True,
                       random_zoom=True,
                       include_depth=args.use_depth,
                       include_rgb=args.use_rgb)
-    logging.info('Dataset size is {}'.format(dataset.length))
+    # Remove data augmentation from validation set
+    valid_dataset = Dataset(args.dataset_path,
+                      ds_rotate=args.ds_rotate,
+                      random_rotate=False,
+                      random_zoom=False,
+                      include_depth=args.use_depth,
+                      include_rgb=args.use_rgb)
+    logging.info('Dataset size is {}'.format(train_dataset.length))
 
     # Creating data indices for training and validation splits
-    indices = list(range(dataset.length))
-    split = int(np.floor(args.split * dataset.length))
+    indices = list(range(train_dataset.length))
+    split = int(np.floor(args.split * train_dataset.length))
     if args.ds_shuffle:
         np.random.seed(args.random_seed)
         np.random.shuffle(indices)
@@ -263,13 +270,13 @@ def run():
     val_sampler = torch.utils.data.sampler.SubsetRandomSampler(val_indices)
 
     train_data = torch.utils.data.DataLoader(
-        dataset,
+        train_dataset,
         batch_size=args.batch_size,
         num_workers=args.num_workers,
         sampler=train_sampler
     )
     val_data = torch.utils.data.DataLoader(
-        dataset,
+        valid_dataset,
         batch_size=1,
         num_workers=args.num_workers,
         sampler=val_sampler
