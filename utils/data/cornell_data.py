@@ -38,9 +38,11 @@ class CornellDataset(GraspDatasetBase):
     def get_gtbb(self, idx, rot=0, zoom=1.0):
         gtbbs = grasp.GraspRectangles.load_from_cornell_file(self.grasp_files[idx])
         center, left, top = self._get_crop_attrs(idx)
-        # gtbbs.rotate(rot, center)
+        if rot!=0:
+            gtbbs.rotate(rot, center)
         gtbbs.offset((-top, -left))
-        gtbbs.zoom(zoom, (self.output_size // 2, self.output_size // 2))
+        if zoom!=1.0:
+            gtbbs.zoom(zoom, (self.output_size // 2, self.output_size // 2))
         return gtbbs
 
     def get_depth(self, idx, rot=0, zoom=1.0):
