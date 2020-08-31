@@ -104,13 +104,14 @@ class GraspModule(pl.LightningModule):
         return result
 
     def validation_epoch_end(self, val_step_outputs):
+        # val_loss = torch.stack([x['val_loss'] for x in val_step_outputs]).sum()
         correct = torch.stack([x for x in val_step_outputs.correct]).sum()
         failed = torch.stack([x for x in val_step_outputs.failed]).sum()
         result = pl.EvalResult()
         iou = torch.div(correct,correct+failed)
         result.log_dict({'correct_sum':correct,'failed_sum':failed,'IoU':iou})
-        print(f'IoU: {correct}/{failed} = {iou:.2f}')
-        return val_step_outputs
+        print(f'IoU: {correct:.0f}/{failed:.0f} = {iou:.2f}')
+        return result
 
     def prepare_data(self):
         # download only
