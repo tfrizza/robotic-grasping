@@ -91,6 +91,7 @@ class GraspDatasetBase(torch.utils.data.Dataset):
         cos = self.numpy_to_torch(np.cos(2 * ang_img))
         sin = self.numpy_to_torch(np.sin(2 * ang_img))
         width = self.numpy_to_torch(width_img)
+        bbs_tensor = torch.from_numpy(np.expand_dims(bbs.to_array(), 0).astype(np.float32))
 
         return x, (pos, cos, sin, width), idx, rot, zoom_factor
 

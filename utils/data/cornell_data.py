@@ -10,7 +10,7 @@ class CornellDataset(GraspDatasetBase):
     Dataset wrapper for the Cornell dataset.
     """
 
-    def __init__(self, file_path, ds_rotate=0, **kwargs):
+    def __init__(self, grasp_files, ds_rotate=0, **kwargs):
         """
         :param file_path: Cornell Dataset directory.
         :param ds_rotate: If splitting the dataset, rotate the list of items by this fraction first
@@ -18,16 +18,12 @@ class CornellDataset(GraspDatasetBase):
         """
         super(CornellDataset, self).__init__(**kwargs)
 
-        self.grasp_files = glob.glob(os.path.join(file_path, '*', 'pcd*cpos.txt'))
+        self.grasp_files = grasp_files
         self.grasp_files.sort()
         self.length = len(self.grasp_files)
 
         if self.length == 0:
-            raise FileNotFoundError('No dataset files found. Check path: {}'.format(file_path))
-
-        if ds_rotate:
-            self.grasp_files = self.grasp_files[int(self.length * ds_rotate):] + self.grasp_files[
-                                                                                 :int(self.length * ds_rotate)]
+            raise FileNotFoundError('No dataset files found.')
 
         self.depth_files = [f.replace('cpos.txt', 'd.tiff') for f in self.grasp_files]
         self.rgb_files = [f.replace('d.tiff', 'r.png') for f in self.depth_files]
