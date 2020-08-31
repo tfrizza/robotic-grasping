@@ -65,15 +65,16 @@ class GraspModule(pl.LightningModule):
         loss = self.compute_loss(y_hat, y)
 
         # (log keyword is optional)
-        result = pl.TrainResult(minimize=loss['loss'])
-        result.log('val_loss', loss['loss'], prog_bar=True)
-        logs = {'train_loss': loss['loss'],
-                'p_loss': loss['losses']['p_loss'],
-                'cos_loss': loss['losses']['cos_loss'],
-                'sin_loss': loss['losses']['sin_loss'],
-                'width_loss': loss['losses']['width_loss']
-                }
-        result.log_dict(logs)
+        # result = pl.TrainResult(minimize=loss['loss'])
+        # result.log('val_loss', loss['loss'], prog_bar=True)
+        # logs = {'train_loss': loss['loss'],
+        #         'p_loss': loss['losses']['p_loss'],
+        #         'cos_loss': loss['losses']['cos_loss'],
+        #         'sin_loss': loss['losses']['sin_loss'],
+        #         'width_loss': loss['losses']['width_loss']
+        #         }
+        # result.log_dict(logs)
+        result = {'loss':loss['loss']}
         return result
 
     def validation_step(self, batch, batch_idx):
@@ -91,25 +92,26 @@ class GraspModule(pl.LightningModule):
                                            grasp_width=w_out,
                                            )
 
-        result = pl.EvalResult()
-        result.log('val_loss', loss['loss'], prog_bar=False)
-        result.log_dict({'train_loss': loss['loss'],
-                         'p_loss': loss['losses']['p_loss'],
-                         'cos_loss': loss['losses']['cos_loss'],
-                         'sin_loss': loss['losses']['sin_loss'],
-                         'width_loss': loss['losses']['width_loss']
-                         })
-        result.correct = torch.tensor(float(s))
-        result.failed = torch.tensor(float(not s))
+        # result = pl.EvalResult()
+        # result.log('val_loss', loss['loss'], prog_bar=False)
+        # result.log_dict({'train_loss': loss['loss'],
+        #                  'p_loss': loss['losses']['p_loss'],
+        #                  'cos_loss': loss['losses']['cos_loss'],
+        #                  'sin_loss': loss['losses']['sin_loss'],
+        #                  'width_loss': loss['losses']['width_loss']
+        #                  })
+        result = {'val_loss': loss['loss']}
+        # result.correct = torch.tensor(float(s))
+        # result.failed = torch.tensor(float(not s))
+        result['log'] = {'correct':torch.tensor(float(s)), 'failed':torch.tensor(float(not s))}
         return result
 
     def validation_epoch_end(self, val_step_outputs):
-        # val_loss = torch.stack([x['val_loss'] for x in val_step_outputs]).sum()
-        correct = torch.stack([x for x in val_step_outputs.correct]).sum()
-        failed = torch.stack([x for x in val_step_outputs.failed]).sum()
-        result = pl.EvalResult()
+        val_loss = torch.stack([x['val_loss'] for x in val_step_outputs]).mean()
+        correct = torch.stack([x['log']['correct'] for x in val_step_outputs]).sum()
+        failed = torch.stack([x['log']['failed'] for x in val_step_outputs]).sum()
         iou = torch.div(correct,correct+failed)
-        result.log_dict({'correct_sum':correct,'failed_sum':failed,'IoU':iou})
+        result = {'val_loss':val_loss,'correct_sum':correct,'failed_sum':failed,'IoU':iou}
         print(f'IoU: {correct:.0f}/{failed:.0f} = {iou:.2f}')
         return result
 
