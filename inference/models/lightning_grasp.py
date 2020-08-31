@@ -114,7 +114,7 @@ class GraspModule(pl.LightningModule):
                 'width_loss': width_loss,
                 'correct': correct,
                 'failed': failed,
-                'IoU': correct/(correct+failed)
+                'IoU': torch.true_divide(correct,correct+failed)
                 }
         return {'loss': loss, 'log': logs}
 
