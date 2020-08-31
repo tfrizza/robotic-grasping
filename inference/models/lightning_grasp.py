@@ -112,7 +112,7 @@ class GraspModule(pl.LightningModule):
         failed = torch.stack([x['log']['failed'] for x in val_step_outputs]).sum()
         iou = torch.div(correct,correct+failed)
         result = {'val_loss':val_loss,'correct_sum':correct,'failed_sum':failed,'IoU':iou}
-        print(f'IoU: {correct:.0f}/{failed:.0f} = {iou:.2f}')
+        print(f'IoU: {correct:.0f}/{correct+failed:.0f} = {iou:.2f}')
         return result
 
     def prepare_data(self):

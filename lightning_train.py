@@ -63,8 +63,16 @@ def parse_args():
 
 args = parse_args()
 
+# Load the network
+input_channels = 1 * args.use_depth + 3 * args.use_rgb
+grasp_model = GenerativeResnet(args,
+    input_channels=input_channels,
+    dropout=args.use_dropout,
+    prob=args.dropout_prob,
+    channel_size=args.channel_size
+)
 # grasp_dm = GraspDataModule(args, batch_size=8)
-grasp_model = GenerativeResnet(args)
+# grasp_model = GenerativeResnet(args)
 # trainer = pl.Trainer(tpu_cores=8, precision=32)
 trainer = pl.Trainer()
 trainer.fit(grasp_model)
