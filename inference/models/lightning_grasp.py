@@ -92,27 +92,26 @@ class GraspModule(pl.LightningModule):
                                            grasp_width=w_out,
                                            )
 
-        # result = pl.EvalResult()
-        # result.log('val_loss', loss['loss'], prog_bar=False)
-        # result.log_dict({'train_loss': loss['loss'],
-        #                  'p_loss': loss['losses']['p_loss'],
-        #                  'cos_loss': loss['losses']['cos_loss'],
-        #                  'sin_loss': loss['losses']['sin_loss'],
-        #                  'width_loss': loss['losses']['width_loss']
-        #                  })
-        result = {'val_loss': loss['loss']}
-        # result.correct = torch.tensor(float(s))
-        # result.failed = torch.tensor(float(not s))
-        result['log'] = {'correct':torch.tensor(float(s)), 'failed':torch.tensor(float(not s))}
-        return result
-
-    def validation_epoch_end(self, val_step_outputs):
-        val_loss = torch.stack([x['val_loss'] for x in val_step_outputs]).mean()
-        correct = torch.stack([x['log']['correct'] for x in val_step_outputs]).sum()
-        failed = torch.stack([x['log']['failed'] for x in val_step_outputs]).sum()
-        iou = torch.div(correct,correct+failed)
-        result = {'val_loss':val_loss,'correct_sum':correct,'failed_sum':failed,'IoU':iou}
-        print(f'IoU: {correct:.0f}/{correct+failed:.0f} = {iou:.2f}')
+        result = pl.EvalResult(early_stop_on=None, checkpoint_on=None)
+        result.log('val_loss', loss['loss'], prog_bar=False)
+        result.log_dict({'train_loss': loss['loss'],
+                         'p_loss': loss['losses']['p_loss'],
+                         'cos_loss': loss['losses']['cos_loss'],
+                         'sin_loss': loss['losses']['sin_loss'],
+                         'width_loss': loss['losses']['width_loss']
+                         })
+        result.log_dict({'correct':torch.tensor(float(s)),
+                         'failed':torch.tensor(float(not s))},
+                        on_epoch=True,
+                        reduce_fx=torch.sum,
+                        sync_dist=True,
+                        sync_dist_op='sum')
+        result.log('IoU', torch.tensor(float(s)),
+                   prog_bar=True,
+                   on_epoch=True,
+                   reduce_fx=torch.mean,
+                   sync_dist=True,
+                   sync_dist_op='mean')
         return result
 
     def prepare_data(self):

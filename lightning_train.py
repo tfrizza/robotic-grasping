@@ -45,6 +45,8 @@ def parse_args():
                         help='Batches per Epoch')
     parser.add_argument('--optim', type=str, default='adam',
                         help='Optmizer for the training. (adam or SGD)')
+    parser.add_argument('--tpu', action='store_true', default=False,
+                        help='Whether to run on tpu or not')
 
     # Logging etc.
     parser.add_argument('--description', type=str, default='',
@@ -74,5 +76,6 @@ grasp_model = GenerativeResnet(args,
 # grasp_dm = GraspDataModule(args, batch_size=8)
 # grasp_model = GenerativeResnet(args)
 # trainer = pl.Trainer(tpu_cores=8, precision=32)
-trainer = pl.Trainer()
+tpu_cores = 1 if args.tpu else None
+trainer = pl.Trainer(tpu_cores=tpu_cores)
 trainer.fit(grasp_model)
