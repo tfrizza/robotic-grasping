@@ -65,8 +65,8 @@ class GraspModule(pl.LightningModule):
         loss = self.compute_loss(y_hat, y)
 
         # (log keyword is optional)
-        # result = pl.TrainResult(minimize=loss['loss'])
-        # result.log('val_loss', loss['loss'], prog_bar=True)
+        result = pl.TrainResult(minimize=loss['loss'])
+        # result.log('train_loss', loss['loss'], prog_bar=True)
         # logs = {'train_loss': loss['loss'],
         #         'p_loss': loss['losses']['p_loss'],
         #         'cos_loss': loss['losses']['cos_loss'],
@@ -74,7 +74,7 @@ class GraspModule(pl.LightningModule):
         #         'width_loss': loss['losses']['width_loss']
         #         }
         # result.log_dict(logs)
-        result = {'loss':loss['loss']}
+        # result = {'loss':loss['loss']}
         return result
 
     def validation_step(self, batch, batch_idx):
@@ -92,7 +92,7 @@ class GraspModule(pl.LightningModule):
                                            grasp_width=w_out,
                                            )
 
-        result = pl.EvalResult(early_stop_on=None, checkpoint_on=None)
+        result = pl.EvalResult()
         result.log('val_loss', loss['loss'], prog_bar=False)
         result.log_dict({'train_loss': loss['loss'],
                          'p_loss': loss['losses']['p_loss'],
