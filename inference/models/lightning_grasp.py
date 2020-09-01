@@ -65,8 +65,8 @@ class GraspModule(pl.LightningModule):
         loss = self.compute_loss(y_hat, y)
 
         # (log keyword is optional)
-        result = pl.TrainResult(minimize=loss['loss'])
-        # result.log('train_loss', loss['loss'], prog_bar=True)
+        # result = pl.TrainResult(minimize=loss['loss'])
+        # result.log('train_loss', loss['loss'], prog_bar=False, sync_dist=True)
         # logs = {'train_loss': loss['loss'],
         #         'p_loss': loss['losses']['p_loss'],
         #         'cos_loss': loss['losses']['cos_loss'],
@@ -74,7 +74,7 @@ class GraspModule(pl.LightningModule):
         #         'width_loss': loss['losses']['width_loss']
         #         }
         # result.log_dict(logs)
-        # result = {'loss':loss['loss']}
+        result = {'loss': loss['loss'], 'log': {'train_loss': loss['loss']}}
         return result
 
     def validation_step(self, batch, batch_idx):
@@ -92,27 +92,35 @@ class GraspModule(pl.LightningModule):
                                            grasp_width=w_out,
                                            )
 
-        result = pl.EvalResult()
-        result.log('val_loss', loss['loss'], prog_bar=False)
-        result.log_dict({'train_loss': loss['loss'],
-                         'p_loss': loss['losses']['p_loss'],
-                         'cos_loss': loss['losses']['cos_loss'],
-                         'sin_loss': loss['losses']['sin_loss'],
-                         'width_loss': loss['losses']['width_loss']
-                         })
-        result.log_dict({'correct':torch.tensor(float(s)),
-                         'failed':torch.tensor(float(not s))},
-                        on_epoch=True,
-                        reduce_fx=torch.sum,
-                        sync_dist=True,
-                        sync_dist_op='sum')
-        result.log('IoU', torch.tensor(float(s)),
-                   prog_bar=True,
-                   on_epoch=True,
-                   reduce_fx=torch.mean,
-                   sync_dist=True,
-                   sync_dist_op='mean')
+        # result = pl.EvalResult()
+        # result.log('val_loss', loss['loss'], prog_bar=False, sync_dist=True)
+        # result.log_dict({'train_loss': loss['loss'],
+        #                  'p_loss': loss['losses']['p_loss'],
+        #                  'cos_loss': loss['losses']['cos_loss'],
+        #                  'sin_loss': loss['losses']['sin_loss'],
+        #                  'width_loss': loss['losses']['width_loss']
+        #                  })
+        # result.log_dict({'correct':torch.tensor(float(s)),
+        #                  'failed':torch.tensor(float(not s))},
+        #                 on_epoch=True,
+        #                 reduce_fx=torch.sum,
+        #                 sync_dist=True,
+        #                 sync_dist_op='sum')
+        # result.log('IoU', torch.tensor(float(s)),
+        #            prog_bar=False,
+        #            on_epoch=True,
+        #            reduce_fx=torch.mean,
+        #            sync_dist=True,
+        #            sync_dist_op='mean')
+        result = {'val_loss': loss['loss'], 'correct': torch.tensor(float(s))}
         return result
+
+    def validation_epoch_end(self, outputs):
+        correct = torch.stack([x['correct'] for x in outputs]).sum()
+        iou = torch.stack([x['correct'] for x in outputs]).mean()
+        val_loss = torch.stack([x['val_loss'] for x in outputs]).mean()
+        print(f'IoU: {correct:.0f}/{len(outputs):.0f} = {iou:.2f}')
+        return {'log': {'val_loss': val_loss, 'iou': iou, 'correct': correct}}
 
     def prepare_data(self):
         # download only

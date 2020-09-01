@@ -1,9 +1,11 @@
 import pytorch_lightning as pl
 from argparse import ArgumentParser
+import os
 
 # from inference.lightning_grasp import GraspModule
 from inference.models.grconvnet_lightning import GenerativeResnet
 from utils.data.lightning_data import GraspDataModule
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 def parse_args():
     parser = ArgumentParser(description='Train network')
@@ -73,9 +75,17 @@ grasp_model = GenerativeResnet(args,
     prob=args.dropout_prob,
     channel_size=args.channel_size
 )
-# grasp_dm = GraspDataModule(args, batch_size=8)
-# grasp_model = GenerativeResnet(args)
+
+checkpoint_cb = ModelCheckpoint(
+    filepath=os.getcwd(),
+    save_top_k=1,
+    verbose=True,
+    monitor='val_loss',
+    mode='min',
+    prefix=''
+)
+
 # trainer = pl.Trainer(tpu_cores=8, precision=32, auto_lr_find=False)
-tpu_cores = 1 if args.tpu else None
-trainer = pl.Trainer(tpu_cores=tpu_cores)
+tpu_cores = 8 if args.tpu else None
+trainer = pl.Trainer(tpu_cores=tpu_cores, checkpoint_callback=checkpoint_cb)
 trainer.fit(grasp_model)
