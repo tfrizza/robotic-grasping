@@ -312,6 +312,8 @@ def run():
     sys.stdout = sys.__stdout__
     f.close()
 
+    # validate(net, device, val_data)
+
     best_iou = 0.0
     for epoch in range(args.epochs):
         logging.info('Beginning Epoch {:02d}'.format(epoch))
