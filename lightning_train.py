@@ -16,14 +16,24 @@ parser = pl.Trainer.add_argparse_args(parser)
 
 args = parser.parse_args()
 
+# checkpoint_callback = ModelCheckpoint(
+#     filepath=os.getcwd(),
+#     save_top_k=True,
+#     verbose=True,
+#     save_weights_only=False,
+#     monitor='val_loss',
+#     mode='min',
+#     prefix=''
+# )
+
 checkpoint_callback = ModelCheckpoint(
-    filepath=os.getcwd(),
-    save_top_k=True,
+    filepath='/content/robotic-grasping/trained-models/',
+    save_last=True,
+    # save_top_k=1,
     verbose=True,
-    save_weights_only=False,
     monitor='val_loss',
     mode='min',
-    prefix=''
+    prefix='grasp'
 )
 
 trainer = pl.Trainer.from_argparse_args(args,

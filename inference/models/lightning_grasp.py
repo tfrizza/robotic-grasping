@@ -171,13 +171,12 @@ class GraspModule(pl.LightningModule):
         y_hat = self(x)
         loss = self.compute_loss(y_hat, y)
 
-        # result = {'loss': loss['loss'], 'log': {'train_loss': loss['loss']}}
         result = pl.TrainResult(minimize=loss['loss'])
         logs = {'train_loss': loss['loss'],
-                'p_loss': loss['losses']['p_loss'],
-                'cos_loss': loss['losses']['cos_loss'],
-                'sin_loss': loss['losses']['sin_loss'],
-                'width_loss': loss['losses']['width_loss']
+                'train_p_loss': loss['losses']['p_loss'],
+                'train_cos_loss': loss['losses']['cos_loss'],
+                'train_sin_loss': loss['losses']['sin_loss'],
+                'train_width_loss': loss['losses']['width_loss']
                 }
         result.log_dict(logs)
         return result
@@ -198,11 +197,11 @@ class GraspModule(pl.LightningModule):
                                            )
 
         result = pl.EvalResult()
-        result.log_dict({'val_loss': loss['loss'],
-                         'p_loss': loss['losses']['p_loss'],
-                         'cos_loss': loss['losses']['cos_loss'],
-                         'sin_loss': loss['losses']['sin_loss'],
-                         'width_loss': loss['losses']['width_loss']
+        result.log('val_loss', loss['loss'], prog_bar=True)
+        result.log_dict({'val_p_loss': loss['losses']['p_loss'],
+                         'val_cos_loss': loss['losses']['cos_loss'],
+                         'val_sin_loss': loss['losses']['sin_loss'],
+                         'val_width_loss': loss['losses']['width_loss']
                          })
         result.log_dict({'correct': torch.tensor(float(s)),
                          'failed': torch.tensor(float(not s))},
