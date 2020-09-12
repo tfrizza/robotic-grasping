@@ -1,5 +1,5 @@
 from inference.models.grconvnet_lightning import GraspModule
-from utils.dataset_processing.image import Image
+from utils.dataset_processing.image import Image, DepthImage
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
@@ -33,7 +33,17 @@ def get_rgb(file, rot=0, zoom=1.0, normalise=True, output_size=1000):
         rgb_img.img = rgb_img.img.transpose((2, 0, 1))
     return rgb_img.img
 
-def predict_grasp(img_path, model_path='trained-models/epoch83_cpu.pt', plot=False):
+def get_depth(file, rot=0, zoom=1.0, output_size=1000):
+    depth_img = DepthImage.from_tiff(file)
+    center, left, top = _get_crop_attrs(depth_img)
+    depth_img.rotate(rot, center)
+    depth_img.crop((top, left), (min(480, top + output_size), min(640, left + output_size)))
+    depth_img.normalise()
+    depth_img.zoom(zoom)
+    depth_img.resize((224, 224))
+    return depth_img.img
+
+def predict_grasp(img_path, depth_path, model_path, plot=False):
     '''
     Takes in an arbitrary image, preprocesses it (subject to change) to normalised 224x224x3
     and predicts using saved model
@@ -45,14 +55,22 @@ def predict_grasp(img_path, model_path='trained-models/epoch83_cpu.pt', plot=Fal
     >returns: 3-tuple of (quality,width,angle) images, each of size (224x224x1)
     '''
     # ckpt = torch.load('trained-models/epoch152_cpu.ckpt', map_location=torch.device('cpu'))
-    model = torch.load('trained-models/epoch83_cpu.pt')
+    model = torch.load(model_path)
 
     # img_path = 'data/wild/istockphoto-623280930-170667a.jpg'
     rgb_img = get_rgb(img_path, 0, 1) # This is all hard-coded for now to suit the trained model
-    img = numpy_to_torch(rgb_img).unsqueeze(0)
+    depth_img = get_depth(depth_path, 0, 1)
+
+    x = numpy_to_torch(
+        np.concatenate(
+            (np.expand_dims(depth_img, 0),
+             rgb_img),
+            0
+        )
+    ).unsqueeze(0)
 
     model.eval()
-    y_hat = model(img)
+    y_hat = model(x)
     pos_output, cos_output, sin_output, width_output = y_hat
     # will do angle preds later
     q = pos_output[0].detach().numpy()
@@ -74,6 +92,7 @@ def predict_grasp(img_path, model_path='trained-models/epoch83_cpu.pt', plot=Fal
     return q,w
 
 if __name__ == '__main__':
-    img_path = 'data/wild/istockphoto-623280930-170667a.jpg'
-    model_path = 'trained-models/epoch83_cpu.pt'
-    predict_grasp(img_path, model_path, plot=True)
+    img_path = 'data/cornell/01/pcd0100r.png'
+    depth_path = img_path.replace('r.png','d.tiff')
+    model_path = 'trained-models/grasp_model.pt'
+    predict_grasp(img_path, depth_path, model_path, plot=True)
