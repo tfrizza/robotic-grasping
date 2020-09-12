@@ -232,8 +232,8 @@ class GraspModule(pl.LightningModule):
         train_indices, val_indices = indices[:split], indices[split:]
         train_files = [grasp_files[i] for i in train_indices]
         val_files = [grasp_files[i] for i in val_indices]
-        logging.info('Training size: {}'.format(len(train_indices)))
-        logging.info('Validation size: {}'.format(len(val_indices)))
+        print('Training size: {}'.format(len(train_indices)))
+        print('Validation size: {}'.format(len(val_indices)))
 
         Dataset = get_dataset(self.hparams.dataset)
         grasp_train = Dataset(train_files,

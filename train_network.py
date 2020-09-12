@@ -237,17 +237,31 @@ def run():
     # Get the compute device
     device = get_device(args.force_cpu)
 
+    ###
+    import glob
+    grasp_files = glob.glob(os.path.join(args.dataset_path, '*', 'pcd*cpos.txt'))
+    indices = list(range(len(grasp_files)))
+    split = int(np.floor(args.split * len(grasp_files)))
+    if args.ds_shuffle:
+        np.random.seed(args.random_seed)
+        np.random.shuffle(indices)
+    train_indices, val_indices = indices[:split], indices[split:]
+    train_files = [grasp_files[i] for i in train_indices]
+    val_files = [grasp_files[i] for i in val_indices]
+    print('Training size: {}'.format(len(train_indices)))
+    print('Validation size: {}'.format(len(val_indices)))
+
     # Load Dataset
     logging.info('Loading {} Dataset...'.format(args.dataset.title()))
     Dataset = get_dataset(args.dataset)
-    train_dataset = Dataset(args.dataset_path,
+    train_dataset = Dataset(train_files,
                       ds_rotate=args.ds_rotate,
                       random_rotate=True,
                       random_zoom=True,
                       include_depth=args.use_depth,
                       include_rgb=args.use_rgb)
     # Remove data augmentation from validation set
-    valid_dataset = Dataset(args.dataset_path,
+    valid_dataset = Dataset(val_files,
                       ds_rotate=args.ds_rotate,
                       random_rotate=False,
                       random_zoom=False,
@@ -255,15 +269,15 @@ def run():
                       include_rgb=args.use_rgb)
     logging.info('Dataset size is {}'.format(train_dataset.length))
 
-    # Creating data indices for training and validation splits
-    indices = list(range(train_dataset.length))
-    split = int(np.floor(args.split * train_dataset.length))
-    if args.ds_shuffle:
-        np.random.seed(args.random_seed)
-        np.random.shuffle(indices)
-    train_indices, val_indices = indices[:split], indices[split:]
-    logging.info('Training size: {}'.format(len(train_indices)))
-    logging.info('Validation size: {}'.format(len(val_indices)))
+    # # Creating data indices for training and validation splits
+    # indices = list(range(train_dataset.length))
+    # split = int(np.floor(args.split * train_dataset.length))
+    # if args.ds_shuffle:
+    #     np.random.seed(args.random_seed)
+    #     np.random.shuffle(indices)
+    # train_indices, val_indices = indices[:split], indices[split:]
+    # logging.info('Training size: {}'.format(len(train_indices)))
+    # logging.info('Validation size: {}'.format(len(val_indices)))
 
     # Creating data samplers and loaders
     train_sampler = torch.utils.data.sampler.SubsetRandomSampler(train_indices)
