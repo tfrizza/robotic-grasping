@@ -10,7 +10,7 @@ class JacquardDataset(GraspDatasetBase):
     Dataset wrapper for the Jacquard dataset.
     """
 
-    def __init__(self, file_path, ds_rotate=0, **kwargs):
+    def __init__(self, grasp_files, ds_rotate=0, **kwargs):
         """
         :param file_path: Jacquard Dataset directory.
         :param ds_rotate: If splitting the dataset, rotate the list of items by this fraction first
@@ -18,12 +18,12 @@ class JacquardDataset(GraspDatasetBase):
         """
         super(JacquardDataset, self).__init__(**kwargs)
 
-        self.grasp_files = glob.glob(os.path.join(file_path, '*', '*_grasps.txt'))
+        self.grasp_files = grasp_files#glob.glob(os.path.join(file_path, '*', '*_grasps.txt'))
         self.grasp_files.sort()
         self.length = len(self.grasp_files)
 
         if self.length == 0:
-            raise FileNotFoundError('No dataset files found. Check path: {}'.format(file_path))
+            raise FileNotFoundError('No dataset files found. Check path')
 
         if ds_rotate:
             self.grasp_files = self.grasp_files[int(self.length * ds_rotate):] + self.grasp_files[

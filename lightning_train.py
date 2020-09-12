@@ -27,7 +27,7 @@ args = parser.parse_args()
 # )
 
 checkpoint_callback = ModelCheckpoint(
-    filepath='/content/robotic-grasping/trained-models/',
+    filepath='trained-models/',
     save_last=True,
     # save_top_k=1,
     verbose=True,
