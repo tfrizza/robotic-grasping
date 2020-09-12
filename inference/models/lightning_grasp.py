@@ -226,7 +226,7 @@ class GraspModule(pl.LightningModule):
         if self.hparams.dataset == 'cornell':
             regex_pattern = 'pcd*cpos.txt'
         else:
-            regex_pattern = '*/*_grasps.txt'
+            regex_pattern = '*_grasps.txt'
         grasp_files = glob.glob(os.path.join(self.hparams.dataset_path, '*', regex_pattern))
         indices = list(range(len(grasp_files)))
         split = int(np.floor(self.hparams.split * len(grasp_files)))
