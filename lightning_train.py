@@ -4,6 +4,8 @@ import os
 
 from inference.models.grconvnet_lightning import GraspModule
 from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers import WandbLogger
+
 
 parser = ArgumentParser()
 
@@ -33,10 +35,13 @@ checkpoint_callback = ModelCheckpoint(
     verbose=True,
     monitor='val_loss',
     mode='min',
-    prefix='grasp'
+    prefix='grconvnet_'
 )
 
+wandb_logger = WandbLogger(name='GRConvnet-ch32-jacquard', project='IROS-grasping')
+
 trainer = pl.Trainer.from_argparse_args(args,
-                                        checkpoint_callback=checkpoint_callback)
+                                        checkpoint_callback=checkpoint_callback,
+                                        logger=wandb_logger)
 model = GraspModule(args)
 trainer.fit(model)

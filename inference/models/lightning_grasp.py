@@ -56,6 +56,7 @@ class GraspModule(pl.LightningModule):
     def __init__(self, hparams):
         super(GraspModule, self).__init__()
         self.hparams=hparams
+        self.logger.log_hyperparams(self.hparams)
         input_channels = 1 * self.hparams.use_depth + 3 * self.hparams.use_rgb
         output_channels = 1
         channel_size = self.hparams.channel_size
@@ -172,11 +173,11 @@ class GraspModule(pl.LightningModule):
         loss = self.compute_loss(y_hat, y)
 
         result = pl.TrainResult(minimize=loss['loss'])
-        logs = {'train_loss': loss['loss'],
-                'train_p_loss': loss['losses']['p_loss'],
-                'train_cos_loss': loss['losses']['cos_loss'],
-                'train_sin_loss': loss['losses']['sin_loss'],
-                'train_width_loss': loss['losses']['width_loss']
+        logs = {'train/loss': loss['loss'],
+                'train/p_loss': loss['losses']['p_loss'],
+                'train/cos_loss': loss['losses']['cos_loss'],
+                'train/sin_loss': loss['losses']['sin_loss'],
+                'train/width_loss': loss['losses']['width_loss']
                 }
         result.log_dict(logs)
         return result
@@ -197,11 +198,11 @@ class GraspModule(pl.LightningModule):
                                            )
 
         result = pl.EvalResult()
-        result.log('val_loss', loss['loss'], prog_bar=True)
-        result.log_dict({'val_p_loss': loss['losses']['p_loss'],
-                         'val_cos_loss': loss['losses']['cos_loss'],
-                         'val_sin_loss': loss['losses']['sin_loss'],
-                         'val_width_loss': loss['losses']['width_loss']
+        result.log_dict({'val/loss': loss['loss'],
+                        'val/p_loss': loss['losses']['p_loss'],
+                         'val/cos_loss': loss['losses']['cos_loss'],
+                         'val/sin_loss': loss['losses']['sin_loss'],
+                         'val/width_loss': loss['losses']['width_loss']
                          })
         result.log_dict({'correct': torch.tensor(float(s)),
                          'failed': torch.tensor(float(not s))},
