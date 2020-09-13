@@ -56,7 +56,6 @@ class GraspModule(pl.LightningModule):
     def __init__(self, hparams):
         super(GraspModule, self).__init__()
         self.hparams=hparams
-        self.logger.log_hyperparams(self.hparams)
         input_channels = 1 * self.hparams.use_depth + 3 * self.hparams.use_rgb
         output_channels = 1
         channel_size = self.hparams.channel_size
