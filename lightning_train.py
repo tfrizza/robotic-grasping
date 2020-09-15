@@ -74,13 +74,14 @@ checkpoint_callback = ModelCheckpoint(
     prefix='grconvnet_'
 )
 
-wandb_logger = WandbLogger(name='GRConvnet-ch32-jacquard', project='IROS-grasping')
-nstep_ckpt_cb = CheckpointEveryNSteps(1000)
+# wandb_logger = WandbLogger(name='GRConvnet-ch32-jacquard', project='IROS-grasping')
+# nstep_ckpt_cb = CheckpointEveryNSteps(1000)
 
 trainer = pl.Trainer.from_argparse_args(args,
                                         checkpoint_callback=checkpoint_callback,
                                         # logger=wandb_logger,
-                                        callbacks=[nstep_ckpt_cb]
+                                        # callbacks=[nstep_ckpt_cb]
+                                        # resume_from_checkpoint='/content/robotic-grasping/grasp_model.pt'
                                         )
-model = GraspModule(args)
+model = GraspModule(args)#.load_from_checkpoint('/content/robotic-grasping/grasp_model.pt')
 trainer.fit(model)
